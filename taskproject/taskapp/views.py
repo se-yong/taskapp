@@ -1,5 +1,5 @@
-from django.shortcuts import render, redirect
-from django.views.generic import TemplateView, CreateView, ListView, DetailView
+from django.shortcuts import render, redirect, reverse
+from django.views.generic import TemplateView, CreateView, ListView, DetailView, UpdateView
 from .models import Task, ChecklistItem
 from django.utils import timezone
 from django.core.paginator import Paginator
@@ -65,3 +65,18 @@ class ChecklistCreateView(CreateView):
         return redirect(self.get_success_url())
 
 
+class ChecklistUpdateView(UpdateView):
+    model = ChecklistItem
+    fields = ['checked']
+    template_name = 'pages/checklist_update.html'
+    success_url = '/task/'
+    pk_url_kwarg = 'check_id'
+
+    def get(self, request, *args, **kwargs):
+        data = super().get_object()
+        data.checked = not data.checked
+        data.save()
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse('view-task', kwargs={'task_id': str(self.kwargs['task_id'])})
